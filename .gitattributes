@@ -1,0 +1,5 @@
+* text=auto
+
+# Executed inside Linux containers; CRLF would break them.
+*.sh text eol=lf
+Dockerfile text eol=lf

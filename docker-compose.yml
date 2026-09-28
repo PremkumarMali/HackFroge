@@ -1,0 +1,33 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      - LOG_FILE_PATH=/data/app.log
+      # Passed through from your shell only if set. Never hard-code credentials here.
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+    volumes:
+      - ./data:/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Optional local AWS (CloudWatch + SNS). Start with: docker compose --profile aws up
+  localstack:
+    image: localstack/localstack:3.8
+    profiles: ["aws"]
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sns,cloudwatch
+      - LOCALSTACK_AUTH_TOKEN
+    volumes:
+      - ./infra/localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro
